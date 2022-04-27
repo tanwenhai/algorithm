@@ -1,12 +1,18 @@
 package tree;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * 二叉树的查找、删除、插入操作，前、中、后序遍历
  * @author tanwenhai@outlook.com
  * @since 2022/4/27
  */
-public class Tree {
+public class Tree implements Iterable<Node> {
     private Node root;
+
+    private VisitType visitType = VisitType.FIRST;
 
     public void insert(Integer data) {
         Node node = new Node(data);
@@ -89,57 +95,72 @@ public class Tree {
         return true;
     }
 
-    public static class Node implements Comparable<Node> {
+    public void setVisitType(VisitType visitType) {
+        this.visitType = visitType;
+    }
 
-        private Integer data;
+    @Override
+    public Iterator<Node> iterator() {
+        return new It(visitType);
+    }
 
-        private Node left;
+    private class It implements Iterator<Node> {
+        private final VisitType visitType;
 
-        private Node right;
+        private Node p = root;
+        private List<Node> list = new ArrayList<>();
+        private Iterator<Node> it;
 
-        // 向上查找
-        private Node parent;
+        public It(VisitType visitType) {
+            this.visitType = visitType;
+            if (visitType == VisitType.FIRST) {
+                f(root);
+            }
+            if (visitType == VisitType.MID) {
+                m(p);
+            }
+            if (visitType == VisitType.LAST) {
+                l(p);
+            }
 
-        public Node(Integer data) {
-            this.data = data;
-        }
-
-        public Integer getData() {
-            return data;
-        }
-
-        public void setData(Integer data) {
-            this.data = data;
-        }
-
-        public Node getLeft() {
-            return left;
-        }
-
-        public void setLeft(Node left) {
-            this.left = left;
-        }
-
-        public Node getRight() {
-            return right;
-        }
-
-        public void setRight(Node right) {
-            this.right = right;
+            it = list.iterator();
         }
 
         @Override
-        public int compareTo(Node o) {
-            return this.data.compareTo(o.data);
+        public boolean hasNext() {
+            return it.hasNext();
         }
 
         @Override
-        public String toString() {
-            return "Node{" +
-                "data=" + data +
-                ", left=" + left +
-                ", right=" + right +
-                '}';
+        public Node next() {
+            return it.next();
+        }
+
+        private void f(Node node) {
+            if (node == null) {
+                return;
+            }
+            list.add(node);
+            f(node.left);
+            f(node.right);
+        }
+
+        private void m(Node node) {
+            if (node == null) {
+                return;
+            }
+            m(node.left);
+            list.add(node);
+            m(node.right);
+        }
+
+        private void l(Node node) {
+            if (node == null) {
+                return;
+            }
+            l(node.left);
+            l(node.right);
+            list.add(node);
         }
     }
 
@@ -157,5 +178,7 @@ public class Tree {
         System.out.println(tree.delete(99));
         System.out.println(tree.find(99));
         System.out.println(tree);
+        tree.setVisitType(VisitType.MID);
+        tree.iterator().forEachRemaining(n -> System.out.print(n.data + " "));
     }
 }
